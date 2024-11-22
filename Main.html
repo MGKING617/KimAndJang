@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Section Page</title>
+
+  <style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Top Section */
+.top {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+#toggle-menu {
+  background-color: #444;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin-left: auto; /* 오른쪽 정렬 */
+  display: block; /* 기본적으로 보임 */
+}
+
+#menu {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  background: #555;
+  padding: 10px;
+  border-radius: 5px;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.3s ease; /* 부드러운 애니메이션 */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#menu.open {
+  transform: scaleY(1); /* 메뉴가 열림 */
+}
+
+#menu button {
+  background-color: #777;
+  border: none;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* Middle Section */
+.mid {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+}
+
+iframe {
+  width: 90%;
+  height: 90%;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+/* Bottom Section */
+.bottom {
+  background-color: #333;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.nav-button {
+  background-color: #444;
+  color: rgb(249, 2, 2);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+  background-color: #555;
+}
+
+.nav-button.active {
+  background-color: #2112ff;
+  color: white;
+}
+  </style>
+</head>
+<body>
+  <!-- Top Section -->
+  <div class="top">
+    <button id="toggle-menu">☰ Toggle Menu</button>
+    <div id="menu">
+    </div>
+  </div>
+
+  <!-- Middle Section -->
+  <div class="mid">
+    <iframe id="iframe" src="LayoutView.html" frameborder="0"></iframe>
+  </div>
+
+  <!-- Bottom Section -->
+  <div class="bottom">
+    <button class="nav-button active" onclick="navigateTo('LayoutView.html')">Main</button>
+    <button class="nav-button" onclick="navigateTo('네이버지도편집.html')">Map</button>
+    <button class="nav-button" onclick="navigateTo('profile.html')">Profile</button>
+  </div>
+
+  <script>
+// 메뉴 토글 기능
+const toggleMenu = document.getElementById('toggle-menu');
+const menu = document.getElementById('menu');
+
+toggleMenu.addEventListener('click', function () {
+  menu.classList.toggle('open'); // open 클래스를 토글
+});
+
+// 페이지 이동 및 메뉴 닫기
+function navigateTo(page) {
+  let iframe = document.getElementById('iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'iframe';
+    iframe.src = page;
+    iframe.frameBorder = '0';
+    document.querySelector('.mid').appendChild(iframe);
+  } else {
+    iframe.src = page; // 이미 존재하면 src만 변경
+  }
+
+  // Update button styles
+  const buttons = document.querySelectorAll('.nav-button');
+  buttons.forEach(button => {
+    if (button.getAttribute('onclick').includes(page)) {
+      button.classList.add('active'); // 현재 버튼 활성화
+    } else {
+      button.classList.remove('active'); // 다른 버튼 비활성화
+    }
+  });
+
+  // Main 버튼 클릭 시에만 토글 버튼 보이기
+  if (page === 'LayoutView.html') {
+    toggleMenu.style.display = 'block'; // 토글 버튼 표시
+  } else {
+    toggleMenu.style.display = 'none'; // 토글 버튼 숨김
+    menu.classList.remove('open'); // 메뉴 닫기
+  }
+}
+
+// 초기 상태에서 Main 페이지를 활성화
+document.addEventListener('DOMContentLoaded', () => {
+  navigateTo('LayoutView.html');
+});
+  </script>
+</body>
+</html>

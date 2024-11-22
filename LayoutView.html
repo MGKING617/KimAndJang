@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8공 주차장</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        svg {
+            border: 2px solid #333;
+            width: 90%;
+            height: 600px;
+            background-color: white;
+        }
+        .parking-spot {
+            fill: lightgray;
+            stroke: black;
+            stroke-width: 2;
+            transition: fill 0.3s, stroke 0.3s;
+        }
+        .parking-spot:hover {
+            fill: #FFD700;
+            stroke: #FF4500;
+        }
+        .occupied {
+            fill: red !important;
+        }
+        .available {
+            fill: green !important;
+        }
+        .sensor-id-label {
+            font-size: 12px;
+            text-anchor: middle;
+            fill: black;
+        }
+    </style>
+</head>
+<body>
+    <h1><8공 주차장></h1>
+    <svg id="parking-lot">
+        <defs>
+            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="lightgray" stroke-width="1" />
+            </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" style="pointer-events: none;" />
+    </svg>
+    <script>
+        const svg = document.getElementById("parking-lot");
+
+        // LocalStorage에서 SVG 데이터를 불러오기
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem("parkingLayout");
+            if (savedData) {
+                const layout = JSON.parse(savedData);
+
+                // SVG 초기화
+                svg.innerHTML = `
+                    <defs>
+                        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="lightgray" stroke-width="1" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" style="pointer-events: none;" />
+                `;
+
+                // 저장된 데이터로 SVG를 재구성
+                layout.forEach(block => {
+                    // 사각형 생성
+                    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    rect.setAttribute("class", "parking-spot");
+                    rect.setAttribute("x", block.x);
+                    rect.setAttribute("y", block.y);
+                    rect.setAttribute("width", block.width);
+                    rect.setAttribute("height", block.height);
+                    rect.dataset.sensorId = block.sensorId;
+                    rect.dataset.rotation = block.rotation;
+
+                    if (block.rotation === "90") {
+                        rect.setAttribute("transform", `rotate(90, ${parseFloat(block.x) + block.height / 2}, ${parseFloat(block.y) + block.width / 2})`);
+                    }
+
+                    // 센서 ID 레이블 추가
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("class", "sensor-id-label");
+                    text.setAttribute("x", parseFloat(block.x) + parseFloat(block.width) / 2);
+                    text.setAttribute("y", parseFloat(block.y) + parseFloat(block.height) / 2 + 4); // 중앙 정렬
+                    text.textContent = block.sensorId || "N/A"; // 센서 ID 표시
+
+                    // 클릭 이벤트로 상태 변경
+                    rect.addEventListener("click", () => {
+                        toggleBlockStatus(rect, text);
+                    });
+
+                    svg.appendChild(rect);
+                    svg.appendChild(text);
+                });
+
+            } else {
+                alert("저장된 레이아웃이 없습니다!");
+            }
+        }
+
+        // 블록 상태 토글 (occupied <-> available)
+        function toggleBlockStatus(rect, text) {
+            if (rect.classList.contains("occupied")) {
+                rect.classList.remove("occupied");
+                rect.classList.add("available");
+                text.textContent = rect.dataset.sensorId + " (Available)";
+            } else if (rect.classList.contains("available")) {
+                rect.classList.remove("available");
+                rect.classList.add("occupied");
+                text.textContent = rect.dataset.sensorId + " (Occupied)";
+            } else {
+                rect.classList.add("occupied");
+                text.textContent = rect.dataset.sensorId + " (Occupied)";
+            }
+        }
+
+        // 페이지 로드 시 레이아웃 불러오기
+        document.addEventListener("DOMContentLoaded", loadFromLocalStorage);
+    </script>
+</body>
+</html>
